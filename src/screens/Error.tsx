@@ -1,3 +1,8 @@
 export function Error() {
-  return <div>Error</div>;
+  console.log('Error');
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+    </div>
+  );
 }

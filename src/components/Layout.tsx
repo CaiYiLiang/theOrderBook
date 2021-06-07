@@ -1,4 +1,5 @@
 import { Typography, Layout as AntdLayout } from 'antd';
+import { ErrorBoundary } from 'react-error-boundary';
 import styled from 'styled-components';
 import { Header, Footer, Content } from '.';
 

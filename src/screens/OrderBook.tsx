@@ -1,20 +1,37 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useHistory } from 'react-router';
 import { useWebSocket } from 'ahooks';
 import { Button, Table, Typography } from 'antd';
 import { SwapOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
+import { ErrorBoundary, useErrorHandler } from 'react-error-boundary';
 import { sortedOrderList } from '../utils/sortedOrderList';
 import { Layout, FlexBox } from '../components';
+import { TradePair, OrderBookItem, ResponseMessage } from './OrderBook.type';
 
 const { Text, Title } = Typography;
 
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || '';
+
+const OrderListHeaderWrapper = styled.div`
+  display: flex;
+
+  @media only screen and (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
 const OrderListHeader = styled.div`
   background: #1d1d1d;
-  padding: 1rem 3rem;
+  padding: 1rem 2rem;
 `;
 
 const OrderListTable = styled(Table)`
   width: 50%;
+
+  @media only screen and (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const OrderTableButton = styled(Button)`
@@ -22,25 +39,6 @@ const OrderTableButton = styled(Button)`
   width: 150px;
   height: 36px;
 `;
-
-export type OrderBookItem = {
-  price: number;
-  size: number;
-  total?: number;
-};
-
-export type ResponseMessage = {
-  numLevels: number;
-  product_id: string;
-  feed: string | undefined;
-  bids: Array<Array<number>>;
-  asks: Array<Array<number>>;
-};
-
-enum TradePair {
-  ETHUSD = 'ETHUSD',
-  XBTUSD = 'XBTUSD',
-}
 
 const genTableColumns = (tableType: 'bids' | 'asks') => [
   {
@@ -72,9 +70,7 @@ export const OrderBook: React.VFC = () => {
   const subTitle = `${tradePair === TradePair.XBTUSD ? 'BTC' : 'ETH'}/USD`;
   const message = `{"event":"subscribe", "feed":"book_ui_1","product_ids":["PI_${tradePair}"] }`;
 
-  const { readyState, sendMessage, latestMessage, disconnect, connect } = useWebSocket(
-    'wss://www.cryptofacilities.com/ws/v1'
-  );
+  const { readyState, sendMessage, latestMessage, disconnect, connect } = useWebSocket(SOCKET_URL);
 
   useEffect(() => {
     if (readyState === 1) {
@@ -124,27 +120,28 @@ export const OrderBook: React.VFC = () => {
       <OrderListHeader>
         <Title level={4}>{subTitle}</Title>
       </OrderListHeader>
-      <FlexBox>
+      <OrderListHeaderWrapper>
         <OrderListTable
           dataSource={bidList}
           columns={genTableColumns('bids').reverse()}
-          scroll={{ y: 600 }}
+          scroll={{ y: 500 }}
           pagination={false}
           loading={bidList.length <= 0}
         />
         <OrderListTable
           dataSource={asksList}
           columns={genTableColumns('asks')}
-          scroll={{ y: 600 }}
+          scroll={{ y: 500 }}
           pagination={false}
           loading={asksList.length <= 0}
         />
-      </FlexBox>
+      </OrderListHeaderWrapper>
       {(bidList.length > 0 || asksList.length > 0) && (
         <FlexBox horizontalGap>
           <OrderTableButton
             type="primary"
             icon={<SwapOutlined />}
+            disabled={readyState !== 1}
             onClick={() => setSwitchTradePair(!switchTradePair)}
           >
             Toggle Feed
@@ -152,7 +149,8 @@ export const OrderBook: React.VFC = () => {
           <OrderTableButton
             type="primary"
             icon={<ExclamationCircleOutlined />}
-            onClick={() => console.log('kill feed')}
+            disabled={readyState !== 1}
+            onClick={() => console.log('error')}
             danger
           >
             Kill Feed
