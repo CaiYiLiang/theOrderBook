@@ -7,7 +7,9 @@
     "plugin:react/recommended",
     "airbnb",
     "prettier",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -35,7 +37,19 @@
         "ts": "never",
         "tsx": "never"
       }
-    ]
+    ],
+    "import/order": ["error", { "newlines-between": "never" }],
+    "import/prefer-default-export": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "no-unused-expressions": "off",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
+    "no-param-reassign": "off",
+    "import/no-cycle": "off",
+    "react/prop-types": "off",
+    "import/no-unresolved": "off",
+    "react/require-default-props": "off",
+    "camelcase": "off"
   },
   "settings": {
     "import/resolver": {
